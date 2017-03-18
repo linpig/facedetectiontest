@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>人臉測試</title>
+	<link rel="stylesheet" type="text/css" href="animate.min.css">
+</head>
+<style type="text/css">
+	.portrait{
+		width: 120px;
+		height: 150px;
+		float: left;
+		background: url(bg.jpeg);
+	}
+
+</style>
+<body>
+
+<img id="demo-img" src="1.jpg">
+<button class="do-img-detect">抓人臉</button>
+<div class="portraits" id='portraits'></div>
+	
+<script src="jquery-1.11.3.min.js"></script>
+<script src="jquery.facedetection.min.js"></script>
+<script>
+    /* jshint loopfunc: true */
+
+(function () {
+    "use strict";
+
+    // jQuery Stuff
+
+    $(function() {
+        var $video = $('#demo-video'),
+            $img   = $('#demo-img');
+
+      
+
+        $('.do-img-detect').click(function(e) {
+            e.preventDefault();
+
+            initFaces();
+
+            $('.spinner').css('opacity', 1);
+
+            $img.faceDetection({
+                interval: 4,
+                async: true,
+                complete: function(faces) {
+                    completed(faces);
+                    // flash();
+
+                    // processing = false;
+
+                    $('.spinner').css('opacity', 0);
+                    $('body').addClass('processed');
+                },
+                error:function(code, message) {
+                    alert('Error: ' + message);
+                }
+            });
+        });
+
+        function initFaces() {
+            $('.portrait, .face-img').remove();
+
+            $('.demo-click').removeClass('animated flipInX');
+
+            $('body').removeClass('processed');
+        }
+
+        function completed(faces) {
+            var marg = 20;
+
+            for (var i = 0; i < faces.length; i++) {
+                var left   = (faces[i].x - marg),
+                    top    = (faces[i].y - marg),
+                    width  = (faces[i].width  + (marg * 2)),
+                    height = (faces[i].height + (marg * 2));
+
+                $('<div />', {
+                    'class': 'face-img',
+                    'css': {
+                        'left':   left   * faces[i].scaleX + 'px',
+                        'top':    top    * faces[i].scaleY + 'px',
+                        'width':  width  * faces[i].scaleX + 'px',
+                        'height': height * faces[i].scaleY + 'px'
+                    }
+                })
+                .appendTo($img.closest('div'));
+
+                var $div = $('<div />', {
+                    'class': 'portrait',
+                    'css': {
+                        'background-image': 'url(' + $img.attr('src') + ')',
+                        'background-position': -left + 'px ' + -top + 'px'
+                    }
+                }).on('click', function(e) {
+                    e.preventDefault();
+
+                    $('.portrait').fadeOut('fast', function() {
+                        $(this).remove();
+
+                        initFaces();
+                    });
+                }).appendTo('#portraits');
+
+                (function($div, i) {
+                    setTimeout(function() {
+                        $div.addClass('animated swing');
+                    }, 100 * i);
+                })($div, i);
+            }
+        }
+    });
+})();
+</script> 
+</body>
+</html>
